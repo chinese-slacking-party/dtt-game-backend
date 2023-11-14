@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	//"github.com/chinese-slacking-party/dtt-game-backend/handlers/session"
+	"github.com/chinese-slacking-party/dtt-game-backend/handlers/users"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -52,29 +55,6 @@ func main() {
 		})
 	})
 
-	// Define a POST route to receive and add a new user to the MongoDB.
-	r.POST("/user", func(c *gin.Context) {
-		var user User
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		// Insert a new user into the collection
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		result, err := collection.InsertOne(ctx, user)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": "User created successfully!",
-			"user":    result,
-		})
-	})
-
 	// Define a GET route to retrieve all users from the MongoDB.
 	r.GET("/users", func(c *gin.Context) {
 		var users []User
@@ -98,6 +78,16 @@ func main() {
 		c.JSON(http.StatusOK, users)
 	})
 
+	// TODO: remove example routes
+	// Add business routes to engine.
+	addRoutes(r)
+
 	// Start serving the application on port 8080.
 	r.Run(":8080")
+}
+
+func addRoutes(e *gin.Engine) {
+	g := e.Group("/api/v1")
+	//g.POST("/session", session.Login)
+	g.POST("/users", users.Register)
 }
