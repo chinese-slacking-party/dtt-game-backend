@@ -1,18 +1,15 @@
 package main
 
 import (
-	"context"
-	"log"
 	"net/http"
-	"time"
 
 	//"github.com/chinese-slacking-party/dtt-game-backend/handlers/session"
+	"github.com/chinese-slacking-party/dtt-game-backend/config"
+	"github.com/chinese-slacking-party/dtt-game-backend/db/mongo"
+	"github.com/chinese-slacking-party/dtt-game-backend/handlers/session"
 	"github.com/chinese-slacking-party/dtt-game-backend/handlers/users"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // User represents a user record in the database
@@ -26,20 +23,7 @@ func main() {
 	r := gin.Default()
 
 	// Set client options and connect to MongoDB
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Get a handle for your collection
-	collection := client.Database("mydatabase").Collection("users")
+	mongo.Init(config.DBName)
 
 	// Define a route for the index page.
 	r.GET("/", func(c *gin.Context) {
@@ -55,30 +39,6 @@ func main() {
 		})
 	})
 
-	// Define a GET route to retrieve all users from the MongoDB.
-	r.GET("/users", func(c *gin.Context) {
-		var users []User
-
-		// Find all users in the collection
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		cursor, err := collection.Find(ctx, bson.M{})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		defer cursor.Close(ctx)
-
-		for cursor.Next(ctx) {
-			var user User
-			cursor.Decode(&user)
-			users = append(users, user)
-		}
-
-		c.JSON(http.StatusOK, users)
-	})
-
-	// TODO: remove example routes
 	// Add business routes to engine.
 	addRoutes(r)
 
@@ -88,6 +48,9 @@ func main() {
 
 func addRoutes(e *gin.Engine) {
 	g := e.Group("/api/v1")
-	//g.POST("/session", session.Login)
+	g.POST("/session", session.Login)
 	g.POST("/users", users.Register)
+	g.POST("/users/:name/files/:filename", users.UploadFile)
+
+	e.Static("/files", config.PhotoDir)
 }

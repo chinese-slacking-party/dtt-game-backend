@@ -6,11 +6,8 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
 
-const (
-	// TODO: config
-	hardcodedDBAddr = "mongodb://localhost:27017"
+	"github.com/chinese-slacking-party/dtt-game-backend/config"
 )
 
 var (
@@ -32,7 +29,7 @@ func Init(db string) error {
 }
 
 func doInit(db string) (err error) {
-	clientOptions := options.Client().ApplyURI(hardcodedDBAddr)
+	clientOptions := options.Client().ApplyURI(config.DBAddr)
 	if client, err = mongo.Connect(context.TODO(), clientOptions); err != nil {
 		return
 	}

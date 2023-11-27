@@ -2,8 +2,12 @@ package users
 
 import (
 	"context"
+	"log"
 	"net/http"
+	"os"
+	"path"
 
+	"github.com/chinese-slacking-party/dtt-game-backend/config"
 	"github.com/chinese-slacking-party/dtt-game-backend/db"
 	"github.com/chinese-slacking-party/dtt-game-backend/db/dao"
 
@@ -35,6 +39,43 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"profile": result,
 	})
+}
+
+func UploadFile(c *gin.Context) {
+	name := c.Param("name")
+	filename := c.Param("filename")
+	// TODO: check if Cookie matches user name
+	userid, err := c.Cookie("userid")
+	if err != nil || userid == "" {
+		c.JSON(http.StatusForbidden, gin.H{"code": 1003, "message": "Not logged in"})
+		return
+	}
+
+	formData, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1004, "message": "No file in body"})
+		return
+	}
+
+	dirPath := path.Join(config.PhotoDir, name)
+	// TODO: Secure permissions
+	if err = os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		log.Println("Error executing MkdirAll():", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": "Unable to create directory"})
+		return
+	}
+
+	filePath := path.Join(dirPath, filename)
+	if _, err = os.Stat(filePath); err == nil {
+		c.JSON(http.StatusConflict, gin.H{"code": 1005, "message": "File exists"})
+		return
+	}
+	if err = c.SaveUploadedFile(formData, filePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": "Unable to save file"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "OK"})
 }
 
 func doRegister(ctx context.Context, user *UserRegisterReq) (*db.User, error) {
