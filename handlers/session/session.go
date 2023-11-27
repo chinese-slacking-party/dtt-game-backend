@@ -18,7 +18,7 @@ type UserLoginReq struct {
 func Login(c *gin.Context) {
 	var user UserLoginReq
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1000, "message": err.Error()})
 		return
 	}
 
@@ -39,7 +39,7 @@ func Login(c *gin.Context) {
 }
 
 func doLogin(ctx context.Context, user *UserLoginReq) (*db.User, error) {
-	userObj, err := dao.LoadUser(ctx, user.Name)
+	userObj, err := dao.GetUserByName(ctx, user.Name)
 	log.Println("Loaded user", userObj, err)
 	if err != nil {
 		return nil, err

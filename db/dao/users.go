@@ -14,7 +14,8 @@ import (
 
 func CreateUser(ctx context.Context, name string) (*db.User, error) {
 	var newUser = db.User{
-		Name: name,
+		Name:       name,
+		NextPicSeq: 1,
 	}
 	if result, err := mongo.CollUsers.InsertOne(ctx, &newUser); err != nil {
 		log.Printf("Create user %s error: %+v", name, err)
@@ -29,9 +30,21 @@ func CreateUser(ctx context.Context, name string) (*db.User, error) {
 	return &newUser, nil
 }
 
-func LoadUser(ctx context.Context, name string) (*db.User, error) {
+func GetUserByName(ctx context.Context, name string) (*db.User, error) {
 	var existingUser db.User
 	if err := mongo.CollUsers.FindOne(ctx, bson.M{"name": name}).Decode(&existingUser); err != nil {
+		if err == driver.ErrNoDocuments {
+			return nil, db.ErrNotFound
+		}
+		return nil, err
+	} else {
+		return &existingUser, err
+	}
+}
+
+func GetUserByID(ctx context.Context, id string) (*db.User, error) {
+	var existingUser db.User
+	if err := mongo.CollUsers.FindOne(ctx, bson.M{"_id": id}).Decode(&existingUser); err != nil {
 		if err == driver.ErrNoDocuments {
 			return nil, db.ErrNotFound
 		}

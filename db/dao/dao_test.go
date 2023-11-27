@@ -18,14 +18,14 @@ func TestSaveLoadUser(t *testing.T) {
 	mongo.Init(dbName)
 
 	{
-		_, err := LoadUser(context.Background(), "user001")
+		_, err := GetUserByName(context.Background(), "user001")
 		assert.ErrorIs(t, err, db.ErrNotFound)
 	}
 
 	{
 		_, err := CreateUser(context.Background(), "user002")
 		assert.NoError(t, err)
-		_, err = LoadUser(context.Background(), "user002")
+		_, err = GetUserByName(context.Background(), "user002")
 		assert.NoError(t, err)
 	}
 

@@ -21,11 +21,11 @@ type UserRegisterReq struct {
 func Register(c *gin.Context) {
 	var user UserRegisterReq
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1000, "message": err.Error()})
 		return
 	}
 
-	result, err := doRegister(context.TODO(), &user)
+	result, err := doRegister(c.Request.Context(), &user)
 	if err != nil {
 		if _, ok := err.(*db.ErrDuplicateKey); ok {
 			c.JSON(http.StatusConflict, gin.H{"code": 1001, "message": "User already exists"})

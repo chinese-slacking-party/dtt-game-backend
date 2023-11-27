@@ -52,5 +52,6 @@ func addRoutes(e *gin.Engine) {
 	g.POST("/users", users.Register)
 	g.POST("/users/:name/files/:filename", users.UploadFile)
 
+	// TODO: Deprecate the default file server; write something with authentication
 	e.Static("/files", config.PhotoDir)
 }
