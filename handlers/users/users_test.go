@@ -24,5 +24,5 @@ func TestRegister(t *testing.T) {
 	// I don't yet know why, but if I move this up (right after the mongo.Init() call) using `defer`,
 	// the database won't be dropped after testing, and tests begin to fail. Going back to this after
 	// the semester ends.
-	assert.NoError(t, mongo.GetDB().Drop(context.TODO()), "Unable to drop database - is your MongoDB sane?")
+	assert.NoError(t, mongo.GetDB().Drop(context.Background()), "Unable to drop database - is your MongoDB sane?")
 }

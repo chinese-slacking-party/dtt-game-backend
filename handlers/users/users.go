@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/chinese-slacking-party/dtt-game-backend/db"
@@ -32,6 +31,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	c.SetCookie("userid", result.ID.Hex(), int(db.CookieLife.Seconds()), "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"profile": result,
 	})
@@ -39,6 +39,5 @@ func Register(c *gin.Context) {
 
 func doRegister(ctx context.Context, user *UserRegisterReq) (*db.User, error) {
 	ret, err := dao.CreateUser(ctx, user.Name)
-	log.Println("doRegister", ret, err)
 	return ret, err
 }

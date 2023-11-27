@@ -1,5 +1,9 @@
 package db
 
+import (
+	driver "go.mongodb.org/mongo-driver/mongo"
+)
+
 type ErrDuplicateKey struct {
 	Internal error
 }
@@ -10,3 +14,7 @@ func (e *ErrDuplicateKey) Error() string {
 	}
 	return string(e.Internal.Error())
 }
+
+var (
+	ErrNotFound = driver.ErrNoDocuments
+)
