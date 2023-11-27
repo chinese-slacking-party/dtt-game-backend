@@ -2,16 +2,17 @@ package users
 
 import (
 	"context"
+	"log"
 	"net/http"
-	"time"
 
-	"github.com/chinese-slacking-party/dtt-game-backend/db/mongo"
+	"github.com/chinese-slacking-party/dtt-game-backend/db"
+	"github.com/chinese-slacking-party/dtt-game-backend/db/dao"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UserRegisterReq struct {
-	Name string `json:"name" bson:"name"`
+	Name string `json:"name"`
 }
 
 func Register(c *gin.Context) {
@@ -21,27 +22,23 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	result, err := doRegister(&user)
-	// TODO: "user already exists" error
+	result, err := doRegister(context.TODO(), &user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if _, ok := err.(*db.ErrDuplicateKey); ok {
+			c.JSON(http.StatusConflict, gin.H{"code": 1001, "message": "User already exists"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		// TODO: profile struct
-		"profile": map[string]interface{}{},
-		"debug":   result,
+		"profile": result,
 	})
 }
 
-func doRegister(user *UserRegisterReq) (map[string]interface{}, error) {
-	// Insert a new user into the collection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if result, err := mongo.CollUsers.InsertOne(ctx, user); err != nil {
-		return nil, err
-	} else {
-		return map[string]interface{}{"insertedID": result.InsertedID}, err
-	}
+func doRegister(ctx context.Context, user *UserRegisterReq) (*db.User, error) {
+	ret, err := dao.CreateUser(ctx, user.Name)
+	log.Println("doRegister", ret, err)
+	return ret, err
 }

@@ -17,9 +17,12 @@ func init() {
 func TestRegister(t *testing.T) {
 	dbName := fmt.Sprintf("dtt_test_register_%d", time.Now().UnixMicro())
 	mongo.Init(dbName)
-	_, err := doRegister(&UserRegisterReq{Name: "alice"})
+	_, err := doRegister(context.Background(), &UserRegisterReq{Name: "alice"})
 	assert.NoError(t, err, "should register successfully")
-	_, err = doRegister(&UserRegisterReq{Name: "alice"})
+	_, err = doRegister(context.Background(), &UserRegisterReq{Name: "alice"})
 	assert.Error(t, err, "should not register the same user twice")
+	// I don't yet know why, but if I move this up (right after the mongo.Init() call) using `defer`,
+	// the database won't be dropped after testing, and tests begin to fail. Going back to this after
+	// the semester ends.
 	assert.NoError(t, mongo.GetDB().Drop(context.TODO()), "Unable to drop database - is your MongoDB sane?")
 }
