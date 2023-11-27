@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/chinese-slacking-party/dtt-game-backend/config"
 	"github.com/chinese-slacking-party/dtt-game-backend/db"
 	"github.com/chinese-slacking-party/dtt-game-backend/db/dao"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,11 +38,13 @@ func AddPhoto(c *gin.Context) {
 		return
 	}
 
+	dao.IncrPhotoSeq(c.Request.Context(), userid)
+
 	picKey := fmt.Sprintf("%s-%03d", userObj.Name, userObj.NextPicSeq)
 	var x = db.Photo{
 		Key:      picKey,
 		Desc:     req.Desc,
-		Original: path.Join(config.PhotoDir, userObj.Name, req.File),
+		Original: path.Join("/files", userObj.Name, req.File),
 		UserID:   userid,
 	}
 	if err = dao.AddPhoto(c.Request.Context(), &x); err != nil {

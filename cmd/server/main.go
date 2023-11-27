@@ -3,9 +3,10 @@ package main
 import (
 	"net/http"
 
-	//"github.com/chinese-slacking-party/dtt-game-backend/handlers/session"
 	"github.com/chinese-slacking-party/dtt-game-backend/config"
 	"github.com/chinese-slacking-party/dtt-game-backend/db/mongo"
+	"github.com/chinese-slacking-party/dtt-game-backend/handlers/album"
+	"github.com/chinese-slacking-party/dtt-game-backend/handlers/game"
 	"github.com/chinese-slacking-party/dtt-game-backend/handlers/session"
 	"github.com/chinese-slacking-party/dtt-game-backend/handlers/users"
 
@@ -51,6 +52,8 @@ func addRoutes(e *gin.Engine) {
 	g.POST("/session", session.Login)
 	g.POST("/users", users.Register)
 	g.POST("/users/:name/files/:filename", users.UploadFile)
+	g.POST("/album/new", album.AddPhoto)
+	g.POST("/game/match/:level/new", game.Start)
 
 	// TODO: Deprecate the default file server; write something with authentication
 	e.Static("/files", config.PhotoDir)

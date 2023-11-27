@@ -30,6 +30,16 @@ func CreateUser(ctx context.Context, name string) (*db.User, error) {
 	return &newUser, nil
 }
 
+func IncrPhotoSeq(ctx context.Context, id string) error {
+	count, err := mongo.CollUsers.UpdateByID(ctx, id, bson.M{
+		"$inc": bson.M{
+			"next_pic_seq": 1,
+		},
+	})
+	log.Println("IncrPhotoSeq for", id, "result:", count)
+	return err
+}
+
 func GetUserByName(ctx context.Context, name string) (*db.User, error) {
 	var existingUser db.User
 	if err := mongo.CollUsers.FindOne(ctx, bson.M{"name": name}).Decode(&existingUser); err != nil {
