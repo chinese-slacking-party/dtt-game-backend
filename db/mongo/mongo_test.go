@@ -15,6 +15,6 @@ func TestInit(t *testing.T) {
 	assert.NoError(t, Init(dbName), "Unable to initialize DB - do you have MongoDB running on localhost?")
 	table := GetDB().Collection("my_table")
 	_, err := table.InsertOne(context.TODO(), bson.M{"foo": "bar"})
-	assert.NoError(t, err, "Unable to insert into my_table - do you have MongoDB running on localhost?")
-	assert.NoError(t, table.Database().Drop(context.TODO()), "Unable to drop database - do you have MongoDB running on localhost?")
+	assert.NoError(t, err, "Unable to insert into my_table - does your MongoDB installation work?")
+	assert.NoError(t, table.Database().Drop(context.TODO()), "Unable to drop database - is your MongoDB sane?")
 }

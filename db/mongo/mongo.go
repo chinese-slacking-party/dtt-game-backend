@@ -17,21 +17,23 @@ var (
 	client   *mongo.Client
 	database *mongo.Database
 
-	// TODO: use lock instead (allow de-init and re-init)
-	initDBOnce sync.Once
+	moduleLock sync.Mutex
 )
 
-func Init(db string) (err error) {
-	initDBOnce.Do(func() {
-		err = doInit(db)
-	})
-	return
+func Init(db string) error {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+	if client != nil {
+		client.Disconnect(context.TODO())
+		database = nil
+		client = nil
+	}
+	return doInit(db)
 }
 
 func doInit(db string) (err error) {
 	clientOptions := options.Client().ApplyURI(hardcodedDBAddr)
-	client, err = mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
+	if client, err = mongo.Connect(context.TODO(), clientOptions); err != nil {
 		return
 	}
 	if err = client.Ping(context.TODO(), nil); err != nil {
