@@ -10,13 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type User struct {
-	// TODO: constraint
+type UserRegisterReq struct {
 	Name string `json:"name" bson:"name"`
 }
 
 func Register(c *gin.Context) {
-	var user User
+	var user UserRegisterReq
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -36,10 +35,13 @@ func Register(c *gin.Context) {
 	})
 }
 
-func doRegister(user *User) (map[string]interface{}, error) {
+func doRegister(user *UserRegisterReq) (map[string]interface{}, error) {
 	// Insert a new user into the collection
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	result, err := mongo.CollUsers.InsertOne(ctx, user)
-	return map[string]interface{}{"insertedID": result.InsertedID}, err
+	if result, err := mongo.CollUsers.InsertOne(ctx, user); err != nil {
+		return nil, err
+	} else {
+		return map[string]interface{}{"insertedID": result.InsertedID}, err
+	}
 }

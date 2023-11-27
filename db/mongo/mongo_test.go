@@ -16,5 +16,5 @@ func TestInit(t *testing.T) {
 	table := GetDB().Collection("my_table")
 	_, err := table.InsertOne(context.TODO(), bson.M{"foo": "bar"})
 	assert.NoError(t, err, "Unable to insert into my_table - does your MongoDB installation work?")
-	assert.NoError(t, table.Database().Drop(context.TODO()), "Unable to drop database - is your MongoDB sane?")
+	assert.NoError(t, GetDB().Drop(context.TODO()), "Unable to drop database - is your MongoDB sane?")
 }
