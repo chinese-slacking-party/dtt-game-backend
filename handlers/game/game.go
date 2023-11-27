@@ -128,7 +128,7 @@ func getPassMsg(userObj *db.User, level string) []string {
 }
 
 func getFailMsg(userObj *db.User, level string) []string {
-	return passMsg[level]
+	return failMsg[level]
 }
 
 func getTitle(userObj *db.User, level string) string {
