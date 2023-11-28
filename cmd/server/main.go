@@ -27,14 +27,14 @@ func main() {
 	mongo.Init(config.DBName)
 
 	// Define a route for the index page.
-	r.GET("/", func(c *gin.Context) {
+	r.GET("/api/v1", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Welcome to the Gin backend service with MongoDB!",
 		})
 	})
 
 	// Define a route for a health check.
-	r.GET("/health", func(c *gin.Context) {
+	r.GET("/api/v1/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "UP",
 		})
