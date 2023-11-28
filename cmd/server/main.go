@@ -56,5 +56,5 @@ func addRoutes(e *gin.Engine) {
 	g.POST("/game/match/:level/new", game.Start)
 
 	// TODO: Deprecate the default file server; write something with authentication
-	e.Static("/files", config.PhotoDir)
+	g.Static("/files", config.PhotoDir)
 }
