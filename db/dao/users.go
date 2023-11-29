@@ -30,7 +30,7 @@ func CreateUser(ctx context.Context, name string) (*db.User, error) {
 	return &newUser, nil
 }
 
-func IncrPhotoSeq(ctx context.Context, id string) error {
+func IncrPhotoSeq(ctx context.Context, id primitive.ObjectID) error {
 	count, err := mongo.CollUsers.UpdateByID(ctx, id, bson.M{
 		"$inc": bson.M{
 			"next_pic_seq": 1,

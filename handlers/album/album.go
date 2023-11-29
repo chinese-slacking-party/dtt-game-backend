@@ -39,14 +39,19 @@ func AddPhoto(c *gin.Context) {
 		return
 	}
 
-	dao.IncrPhotoSeq(c.Request.Context(), userid)
+	dao.IncrPhotoSeq(c.Request.Context(), userObj.ID)
 	origFilePath := path.Join(config.PhotoDir, userObj.Name, req.File)
+	origFileURL := config.OurAddr + path.Join("/api/v1/files", userObj.Name, req.File)
 	picKey := fmt.Sprintf("%s-%03d", userObj.Name, userObj.NextPicSeq)
 	var x = db.Photo{
+		Seq:      userObj.NextPicSeq,
 		Key:      picKey,
 		Desc:     req.Desc,
 		Original: origFilePath,
 		UserID:   userObj.ID.Hex(),
+		URLs: map[string]string{
+			"normal": origFileURL,
+		},
 	}
 	if err = dao.AddPhoto(c.Request.Context(), &x); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": "AddPhoto() failed"})
