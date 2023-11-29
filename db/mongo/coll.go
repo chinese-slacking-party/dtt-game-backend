@@ -55,7 +55,7 @@ func initCollections() {
 		Keys:    bson.D{{"user", 1}, {"level", 1}},
 		Options: options.Index().SetUnique(true),
 	}
-	if createIndexResult, err := CollUsers.Indexes().CreateOne(context.TODO(),
+	if createIndexResult, err := CollGames.Indexes().CreateOne(context.TODO(),
 		idxUserLevel); err != nil {
 		log.Fatal(err)
 	} else {

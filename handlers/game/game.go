@@ -5,9 +5,9 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/chinese-slacking-party/dtt-game-backend/config"
 	"github.com/chinese-slacking-party/dtt-game-backend/db"
 	"github.com/chinese-slacking-party/dtt-game-backend/db/dao"
 
@@ -140,11 +140,37 @@ func getTiles(userObj *db.User, level string) []db.MapTile {
 	rand.Shuffle(len(userObj.Album), func(i, j int) {
 		userObj.Album[i], userObj.Album[j] = userObj.Album[j], userObj.Album[i]
 	})
-	ret := []db.MapTile{
-		{ImageID: userObj.Album[0].Key, ImageTag: "original", URL: config.OurAddr + userObj.Album[0].Original},
-		{ImageID: userObj.Album[1].Key, ImageTag: "original", URL: config.OurAddr + userObj.Album[1].Original},
-		{ImageID: userObj.Album[0].Key, ImageTag: "original", URL: config.OurAddr + userObj.Album[0].Original},
-		{ImageID: userObj.Album[1].Key, ImageTag: "original", URL: config.OurAddr + userObj.Album[1].Original},
+	var ret []db.MapTile
+	switch level {
+	case "1":
+		ret = []db.MapTile{
+			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
+		}
+	case "2":
+		ret = []db.MapTile{
+			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
+		}
+	case "3":
+		ret = []db.MapTile{
+			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			// TODO: change to preloaded photos of 2 random (possibly AI-generated) people
+			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
+			{ImageID: userObj.Album[3].Key, ImageTag: "normal", URL: userObj.Album[3].URLs["normal"]},
+		}
+	case "4":
+		ret = []db.MapTile{
+			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: "changed", URL: strings.ReplaceAll(userObj.Album[0].URLs["normal"], ".jpg", "_changed.jpg")},
+			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
+			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
+		}
 	}
 	rand.Shuffle(len(ret), func(i, j int) {
 		ret[i], ret[j] = ret[j], ret[i]

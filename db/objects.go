@@ -34,6 +34,8 @@ type Photo struct {
 
 	// ObjectId for user-uploaded, or some predefined value for system-generated
 	UserID string `bson:"user" json:"-"`
+	// Has all AI variants been generated?
+	InitialProcessComplete bool `bson:"init_complete" json:"-"`
 }
 
 type Level struct {
