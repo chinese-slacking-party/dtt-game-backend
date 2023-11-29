@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/chinese-slacking-party/dtt-game-backend/config"
 	"github.com/chinese-slacking-party/dtt-game-backend/db"
 	"github.com/chinese-slacking-party/dtt-game-backend/db/dao"
 
@@ -22,7 +23,7 @@ func AddPhoto(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"code": 1003, "message": "Not logged in"})
 		return
 	}
-	userObj, err := dao.GetUserByID(c.Request.Context(), userid)
+	userObj, err := dao.GetUserByName(c.Request.Context(), userid)
 	if err != nil {
 		if err == db.ErrNotFound {
 			c.JSON(http.StatusForbidden, gin.H{"code": 1006, "message": "User not found"})
@@ -39,13 +40,13 @@ func AddPhoto(c *gin.Context) {
 	}
 
 	dao.IncrPhotoSeq(c.Request.Context(), userid)
-
+	origFilePath := path.Join(config.PhotoDir, userObj.Name, req.File)
 	picKey := fmt.Sprintf("%s-%03d", userObj.Name, userObj.NextPicSeq)
 	var x = db.Photo{
 		Key:      picKey,
 		Desc:     req.Desc,
-		Original: path.Join("/files", userObj.Name, req.File),
-		UserID:   userid,
+		Original: origFilePath,
+		UserID:   userObj.ID.Hex(),
 	}
 	if err = dao.AddPhoto(c.Request.Context(), &x); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": "AddPhoto() failed"})

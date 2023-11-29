@@ -32,7 +32,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("userid", result.ID.Hex(), int(db.CookieLife.Seconds()), "/", "", false, true)
+	c.SetCookie("userid", result.Name, int(db.CookieLife.Seconds()), "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"profile": result,
 	})

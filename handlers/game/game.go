@@ -64,7 +64,7 @@ func Start(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"code": 1003, "message": "Not logged in"})
 		return
 	}
-	userObj, err := dao.GetUserByID(c.Request.Context(), userid)
+	userObj, err := dao.GetUserByName(c.Request.Context(), userid)
 	if err != nil {
 		if err == db.ErrNotFound {
 			c.JSON(http.StatusForbidden, gin.H{"code": 1006, "message": "User not found"})
@@ -101,7 +101,7 @@ func Start(c *gin.Context) {
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 		Status:      "initial",
-		UserID:      userid,
+		UserID:      userObj.Name,
 	}
 	tileList := getTiles(userObj, level)
 	for i := 0; i < 2; i++ {
