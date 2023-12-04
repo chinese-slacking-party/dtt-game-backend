@@ -26,6 +26,23 @@ func AddPhoto(ctx context.Context, fields *db.Photo) error {
 	return nil
 }
 
+func UpdatePhotoInitProgress(ctx context.Context, photoID primitive.ObjectID, status string, progress int) error {
+	initComplete := (status == "succeeded")
+	if status == "succeeded" || status == "failed" {
+		progress = 100
+	}
+	updatePredicate := bson.M{
+		"init_complete": initComplete,
+		"init_status":   status,
+		"init_progress": progress,
+	}
+	count, err := mongo.CollPhotos.UpdateByID(ctx, photoID, bson.M{
+		"$set": updatePredicate,
+	})
+	log.Println("UpdatePhotoInitProgress for", photoID, "result:", count)
+	return err
+}
+
 func LoadUserPhotos(ctx context.Context, userID string) ([]db.Photo, error) {
 	cursor, err := mongo.CollPhotos.Find(ctx, bson.M{"user": userID})
 	if err != nil {

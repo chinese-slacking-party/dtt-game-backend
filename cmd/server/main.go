@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/chinese-slacking-party/dtt-game-backend/config"
 	"github.com/chinese-slacking-party/dtt-game-backend/db/mongo"
@@ -13,13 +14,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// User represents a user record in the database
-type User struct {
-	Name  string `json:"name" bson:"name"`
-	Email string `json:"email" bson:"email"`
-}
-
 func main() {
+	// Get config from environment.
+	config.ReplicateAPIKey = os.Getenv("REPLICATE_API_TOKEN")
+	if config.ReplicateAPIKey == "" {
+		panic("REPLICATE_API_TOKEN not set")
+	}
+
 	// Initialize the Gin engine.
 	r := gin.Default()
 

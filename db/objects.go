@@ -36,8 +36,8 @@ type Photo struct {
 	UserID string `bson:"user" json:"-"`
 	// Has all AI variants been generated? (initial_process_complete)
 	InitComplete bool   `bson:"init_complete" json:"-"`
-	InitProgress int32  `bson:"init_progress" json:"-"` // 0-100 from Replicate response
-	InitStatus   string `bson:"init_status" json:"-"`   // From Replicate response, e.g. "starting"
+	Progress     int32  `bson:"init_progress" json:"progress"` // 0-100 from Replicate response
+	Status       string `bson:"init_status" json:"message"`    // From Replicate response, e.g. "starting"
 }
 
 type Level struct {
