@@ -34,8 +34,10 @@ type Photo struct {
 
 	// ObjectId for user-uploaded, or some predefined value for system-generated
 	UserID string `bson:"user" json:"-"`
-	// Has all AI variants been generated?
-	InitialProcessComplete bool `bson:"init_complete" json:"-"`
+	// Has all AI variants been generated? (initial_process_complete)
+	InitComplete bool   `bson:"init_complete" json:"-"`
+	InitProgress int32  `bson:"init_progress" json:"-"` // 0-100 from Replicate response
+	InitStatus   string `bson:"init_status" json:"-"`   // From Replicate response, e.g. "starting"
 }
 
 type Level struct {
