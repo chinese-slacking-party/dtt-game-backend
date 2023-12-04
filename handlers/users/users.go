@@ -49,6 +49,9 @@ func UploadFile(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"code": 1003, "message": "Not logged in"})
 		return
 	}
+	if name == "" {
+		name = userid
+	}
 
 	formData, err := c.FormFile("file")
 	if err != nil {
