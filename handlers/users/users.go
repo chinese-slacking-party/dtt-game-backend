@@ -1,7 +1,6 @@
 package users
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -25,7 +24,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	result, err := doRegister(c.Request.Context(), &user)
+	result, err := dao.CreateUser(c.Request.Context(), user.Name)
 	if err != nil {
 		if _, ok := err.(*db.ErrDuplicateKey); ok {
 			c.JSON(http.StatusConflict, gin.H{"code": 1001, "message": "User already exists"})
@@ -76,9 +75,4 @@ func UploadFile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "OK"})
-}
-
-func doRegister(ctx context.Context, user *UserRegisterReq) (*db.User, error) {
-	ret, err := dao.CreateUser(ctx, user.Name)
-	return ret, err
 }

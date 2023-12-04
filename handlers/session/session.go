@@ -25,7 +25,14 @@ func Login(c *gin.Context) {
 	result, err := doLogin(context.TODO(), &user)
 	if err != nil {
 		if err == db.ErrNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"code": 1002, "message": "User doesn't exist"})
+			if result, err = dao.CreateUser(c.Request.Context(), user.Name); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": err.Error()})
+				return
+			}
+			c.SetCookie("userid", result.Name, int(db.CookieLife.Seconds()), "/", "", false, true)
+			c.JSON(http.StatusOK, gin.H{
+				"profile": result,
+			})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": err.Error()})
