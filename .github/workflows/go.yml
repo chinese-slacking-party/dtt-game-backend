@@ -29,5 +29,17 @@ jobs:
     - name: Test
       run: go test -v ./...
       
-    - name: Build
-      run: go build -v ./...
+    - name: Build for Linux
+      run: GOOS=linux GOARCH=amd64 go build -v -o linux_server ./cmd/server
+
+    - name: Build for Windows
+      run: GOOS=windows GOARCH=amd64 go build -v -o windows_server.exe ./cmd/server
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: binaries
+        path: |
+          linux_server
+          windows_server.exe
+        retention-days: 7
