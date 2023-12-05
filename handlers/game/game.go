@@ -5,8 +5,10 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"path"
 	"time"
 
+	"github.com/chinese-slacking-party/dtt-game-backend/config"
 	"github.com/chinese-slacking-party/dtt-game-backend/db"
 	"github.com/chinese-slacking-party/dtt-game-backend/db/dao"
 
@@ -159,9 +161,8 @@ func getTiles(userObj *db.User, level string) []db.MapTile {
 		ret = []db.MapTile{
 			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
 			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			// TODO: change to preloaded photos of 2 random (possibly AI-generated) people
-			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
-			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
+			*getPreloadedMapTile(0, 5),
+			*getPreloadedMapTile(5, 5),
 		}
 	case "4":
 		ret = []db.MapTile{
@@ -175,4 +176,14 @@ func getTiles(userObj *db.User, level string) []db.MapTile {
 		ret[i], ret[j] = ret[j], ret[i]
 	})
 	return ret
+}
+
+func getPreloadedMapTile(skip int, limit int) *db.MapTile {
+	idx := rand.Intn(limit) + skip
+	imageID := fmt.Sprintf("00system-%03d", idx)
+	return &db.MapTile{
+		ImageID:  imageID,
+		ImageTag: "normal",
+		URL:      config.OurAddr + path.Join("/api/v1/files", imageID+".jpg"),
+	}
 }
