@@ -160,8 +160,8 @@ func getTiles(userObj *db.User, level string) []db.MapTile {
 			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
 			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
 			// TODO: change to preloaded photos of 2 random (possibly AI-generated) people
+			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
 			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
-			{ImageID: userObj.Album[3].Key, ImageTag: "normal", URL: userObj.Album[3].URLs["normal"]},
 		}
 	case "4":
 		ret = []db.MapTile{
