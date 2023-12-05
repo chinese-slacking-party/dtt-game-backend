@@ -1,8 +1,14 @@
 package album
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"math/rand"
 	"net/http"
+	"os"
 	"path"
 
 	"github.com/chinese-slacking-party/dtt-game-backend/config"
@@ -10,6 +16,8 @@ import (
 	"github.com/chinese-slacking-party/dtt-game-backend/db/dao"
 
 	"github.com/gin-gonic/gin"
+	repl "github.com/replicate/replicate-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AddPhotoReq struct {
@@ -40,9 +48,12 @@ func AddPhoto(c *gin.Context) {
 	}
 
 	dao.IncrPhotoSeq(c.Request.Context(), userObj.ID)
-	origFilePath := path.Join(config.PhotoDir, userObj.Name, req.File)
-	origFileURL := config.OurAddr + path.Join("/api/v1/files", userObj.Name, req.File)
 	picKey := fmt.Sprintf("%s-%03d", userObj.Name, userObj.NextPicSeq)
+	origFilePath := path.Join(config.PhotoDir, userObj.Name, req.File)
+	newFilePath := path.Join(config.PhotoDir, userObj.Name, picKey+"_inpainted.png")
+	origFileURL := config.OurAddr + path.Join("/api/v1/files", userObj.Name, req.File)
+	newFileURL := config.OurAddr + path.Join("/api/v1/files", userObj.Name, picKey+"_inpainted.png")
+
 	var x = db.Photo{
 		Seq:      userObj.NextPicSeq,
 		Key:      picKey,
@@ -50,18 +61,135 @@ func AddPhoto(c *gin.Context) {
 		Original: origFilePath,
 		UserID:   userObj.ID.Hex(),
 		URLs: map[string]string{
-			"normal": origFileURL,
+			"normal":  origFileURL,
+			"changed": newFileURL,
 		},
 	}
 	if err = dao.AddPhoto(c.Request.Context(), &x); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": "AddPhoto() failed"})
 		return
 	}
-	// TODO: Generate variants!!!
+	if err = changeClothes(c.Request.Context(), x.ID, origFileURL, newFilePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 1000, "message": "changeClothes() failed " + err.Error()})
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":       userObj.NextPicSeq,
 		"key":      picKey,
 		"progress": 0,    // Generate
 		"message":  "OK", // Generate
 	})
+}
+
+func changeClothes(ctx context.Context, objectID primitive.ObjectID, inURL string, outFile string) error {
+	// TODO: global client in `db` package
+	client, err := repl.NewClient(repl.WithToken(config.ReplicateAPIKey))
+	if err != nil {
+		return err
+	}
+	prediction, err := client.CreatePredictionWithDeployment(ctx,
+		"slackingfred", "dtt-game-large",
+		repl.PredictionInput{
+			"image":  inURL,
+			"prompt": "a person wearing " + getOutfit(),
+		},
+		nil,   // No webhook for now
+		false, // This model does not support streaming
+	)
+	if err != nil {
+		return err
+	}
+	log.Println("The prediction is", mustMarshalJSONString(prediction))
+	go waitForClothes(context.Background(), client, objectID, prediction, outFile)
+	return nil
+}
+
+func waitForClothes(ctx context.Context, client *repl.Client, objectID primitive.ObjectID, prediction *repl.Prediction, outFile string) {
+	predFinish, predError := client.WaitAsync(context.TODO(), prediction)
+	for predFinish != nil || predError != nil {
+		select {
+		case pred, ok := <-predFinish:
+			if !ok {
+				predFinish = nil
+				break
+			}
+			if pred == nil {
+				continue
+			}
+			switch pred.Status {
+			case repl.Starting:
+				log.Println("Model still starting for", outFile)
+			case repl.Processing:
+				progress := pred.Progress()
+				if progress == nil {
+					log.Println("Progress not yet available for", outFile)
+					continue
+				}
+				log.Println("Progress for", outFile, "is", progress.Percentage)
+				dao.UpdatePhotoInitProgress(ctx, objectID, pred.Status.String(), int(100.0*progress.Percentage))
+			case repl.Succeeded:
+				log.Println("Downloading", pred.Output.([]interface{})[3])
+				if err := downloadFile(pred.Output.([]interface{})[3].(string), outFile); err != nil {
+					log.Println("ERROR! Unable to download result for", outFile, "from", pred.Output.([]interface{})[3], "with error", err)
+					return
+				}
+				dao.UpdatePhotoInitProgress(ctx, objectID, pred.Status.String(), 100)
+			default:
+				log.Println("Unexpected prediction status", pred.Status, "for", outFile)
+			}
+		case err, ok := <-predError:
+			if !ok {
+				predError = nil
+			}
+			if err != nil {
+				log.Println("ERROR!", err)
+			}
+		}
+		if predFinish == nil && predError == nil {
+			break
+		}
+	}
+	log.Println("Prediction complete with", mustMarshalJSONString(prediction))
+}
+
+var outfits = []string{
+	"red jacket",
+	"yellow gown",
+	"blue shirt",
+	"coffee coat",
+}
+
+func getOutfit() string {
+	return outfits[rand.Intn(len(outfits))]
+}
+
+func mustMarshalJSONString(obj any) string {
+	bts, err := json.Marshal(obj)
+	if err != nil {
+		panic(err)
+	}
+	return string(bts)
+}
+
+func downloadFile(url string, filepath string) error {
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/chinese-slacking-party/dtt-game-backend/db"
@@ -167,7 +166,7 @@ func getTiles(userObj *db.User, level string) []db.MapTile {
 	case "4":
 		ret = []db.MapTile{
 			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			{ImageID: userObj.Album[0].Key, ImageTag: "changed", URL: strings.ReplaceAll(userObj.Album[0].URLs["normal"], ".jpg", "_changed.jpg")},
+			{ImageID: userObj.Album[0].Key, ImageTag: "changed", URL: userObj.Album[0].URLs["changed"]},
 			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
 			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
 		}
