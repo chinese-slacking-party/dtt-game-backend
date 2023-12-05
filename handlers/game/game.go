@@ -184,6 +184,6 @@ func getPreloadedMapTile(skip int, limit int) *db.MapTile {
 	return &db.MapTile{
 		ImageID:  imageID,
 		ImageTag: "normal",
-		URL:      config.OurAddr + path.Join("/api/v1/files", imageID+".jpg"),
+		URL:      config.OurAddr + path.Join("/api/v1/files", imageID+".png"),
 	}
 }
