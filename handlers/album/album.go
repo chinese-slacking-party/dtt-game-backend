@@ -155,7 +155,7 @@ var outfits = []string{
 	"red jacket",
 	"yellow gown",
 	"blue shirt",
-	"coffee coat",
+	"brown coat",
 }
 
 func getOutfit() string {
