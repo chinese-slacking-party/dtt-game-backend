@@ -50,9 +50,9 @@ func AddPhoto(c *gin.Context) {
 	dao.IncrPhotoSeq(c.Request.Context(), userObj.ID)
 	picKey := fmt.Sprintf("%s-%03d", userObj.Name, userObj.NextPicSeq)
 	origFilePath := path.Join(config.PhotoDir, userObj.Name, req.File)
-	newFilePath := path.Join(config.PhotoDir, userObj.Name, picKey+"_inpainted.png")
-	origFileURL := config.OurAddr + path.Join("/api/v1/files", userObj.Name, req.File)
-	newFileURL := config.OurAddr + path.Join("/api/v1/files", userObj.Name, picKey+"_inpainted.png")
+	newFilePath := path.Join(config.PhotoDir, userObj.Name, picKey+config.AIGenSuffix)
+	origFileURL := config.OurAddr + path.Join(config.APIFilesFull, userObj.Name, req.File)
+	newFileURL := config.OurAddr + path.Join(config.APIFilesFull, userObj.Name, picKey+config.AIGenSuffix)
 
 	var x = db.Photo{
 		Seq:      userObj.NextPicSeq,
@@ -87,7 +87,7 @@ func changeClothes(ctx context.Context, objectID primitive.ObjectID, inURL strin
 		return err
 	}
 	prediction, err := client.CreatePredictionWithDeployment(ctx,
-		"slackingfred", "dtt-game-large",
+		config.ReplicateDeploymentOwner, config.ReplicateDeploymentName,
 		repl.PredictionInput{
 			"image":  inURL,
 			"prompt": "a person wearing " + getOutfit(),
@@ -151,15 +151,8 @@ func waitForClothes(ctx context.Context, client *repl.Client, objectID primitive
 	log.Println("Prediction complete with", mustMarshalJSONString(prediction))
 }
 
-var outfits = []string{
-	"red jacket",
-	"yellow gown",
-	"blue shirt",
-	"brown coat",
-}
-
 func getOutfit() string {
-	return outfits[rand.Intn(len(outfits))]
+	return config.Outfits[rand.Intn(len(config.Outfits))]
 }
 
 func mustMarshalJSONString(obj any) string {

@@ -34,7 +34,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("userid", result.Name, int(db.CookieLife.Seconds()), "/", "", false, true)
+	c.SetCookie("userid", result.Name, int(config.CookieLife.Seconds()), "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"profile": result,
 	})

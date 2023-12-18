@@ -49,7 +49,7 @@ func main() {
 }
 
 func addRoutes(e *gin.Engine) {
-	g := e.Group("/api/v1")
+	g := e.Group(config.APIPrefix)
 	g.POST("/session", session.Login)
 	g.POST("/users", users.Register)
 	g.POST("/album/new", album.AddPhoto)
@@ -59,5 +59,5 @@ func addRoutes(e *gin.Engine) {
 	g.POST("/users/:name/files/:filename", users.UploadFile)
 
 	// TODO: Deprecate the default file server; write something with authentication
-	g.Static("/files", config.PhotoDir)
+	g.Static(config.APIFiles, config.PhotoDir)
 }

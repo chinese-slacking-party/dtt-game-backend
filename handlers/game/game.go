@@ -15,45 +15,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	imgTagNormal  = "normal"
+	imgTagChanged = "changed"
+)
+
 var (
 	minPhotos = map[string]int{
 		"1": 2,
 		"2": 3,
 		"3": 1,
 		"4": 3,
-	}
-
-	passMsg = map[string][]string{
-		"0": {
-			"Amazing work! You get one point for that.",
-			"Once you get 4 points, you can get a reward from your parents.",
-			"Want to keep the excitement going?",
-		},
-	}
-
-	failMsg = map[string][]string{
-		"1": {
-			"No worries at all!",
-			"Every attempt is one step closer to success.",
-			"Would you like to have another try?",
-		},
-		"2": {
-			"You are doing well.",
-			"I really like the effort that you are putting into this.",
-			"Would you like to have another try?",
-		},
-		"3": {
-			"No worries at all!",
-			"Please try to observe their eyes, nose, mouth, and hair.",
-			"These may help you find the answer.",
-			"Would you like to have another try?",
-		},
-		"4": {
-			"You are doing well.",
-			"First, you can focus on the face.",
-			"Second, you can focus on the eyes.",
-			"Would you like to have another try?",
-		},
 	}
 )
 
@@ -125,11 +97,11 @@ func hasEnoughPhotos(userObj *db.User, level string) bool {
 }
 
 func getPassMsg(userObj *db.User, level string) []string {
-	return passMsg["0"]
+	return config.PassMsg["0"]
 }
 
 func getFailMsg(userObj *db.User, level string) []string {
-	return failMsg[level]
+	return config.FailMsg[level]
 }
 
 func getTitle(userObj *db.User, level string) string {
@@ -145,31 +117,31 @@ func getTiles(userObj *db.User, level string) []db.MapTile {
 	switch level {
 	case "1":
 		ret = []db.MapTile{
-			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
-			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagNormal, URL: userObj.Album[0].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[1].Key, ImageTag: imgTagNormal, URL: userObj.Album[1].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagNormal, URL: userObj.Album[0].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[1].Key, ImageTag: imgTagNormal, URL: userObj.Album[1].URLs[imgTagNormal]},
 		}
 	case "2":
 		ret = []db.MapTile{
-			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
-			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagNormal, URL: userObj.Album[0].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[1].Key, ImageTag: imgTagNormal, URL: userObj.Album[1].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagNormal, URL: userObj.Album[0].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[2].Key, ImageTag: imgTagNormal, URL: userObj.Album[2].URLs[imgTagNormal]},
 		}
 	case "3":
 		ret = []db.MapTile{
-			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagNormal, URL: userObj.Album[0].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagNormal, URL: userObj.Album[0].URLs[imgTagNormal]},
 			*getPreloadedMapTile(0, 5),
 			*getPreloadedMapTile(5, 5),
 		}
 	case "4":
 		ret = []db.MapTile{
-			{ImageID: userObj.Album[0].Key, ImageTag: "normal", URL: userObj.Album[0].URLs["normal"]},
-			{ImageID: userObj.Album[0].Key, ImageTag: "changed", URL: userObj.Album[0].URLs["changed"]},
-			{ImageID: userObj.Album[1].Key, ImageTag: "normal", URL: userObj.Album[1].URLs["normal"]},
-			{ImageID: userObj.Album[2].Key, ImageTag: "normal", URL: userObj.Album[2].URLs["normal"]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagNormal, URL: userObj.Album[0].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[0].Key, ImageTag: imgTagChanged, URL: userObj.Album[0].URLs[imgTagChanged]},
+			{ImageID: userObj.Album[1].Key, ImageTag: imgTagNormal, URL: userObj.Album[1].URLs[imgTagNormal]},
+			{ImageID: userObj.Album[2].Key, ImageTag: imgTagNormal, URL: userObj.Album[2].URLs[imgTagNormal]},
 		}
 	}
 	rand.Shuffle(len(ret), func(i, j int) {
@@ -183,7 +155,7 @@ func getPreloadedMapTile(skip int, limit int) *db.MapTile {
 	imageID := fmt.Sprintf("00system-%03d", idx)
 	return &db.MapTile{
 		ImageID:  imageID,
-		ImageTag: "normal",
-		URL:      config.OurAddr + path.Join("/api/v1/files", imageID+".png"),
+		ImageTag: imgTagNormal,
+		URL:      config.OurAddr + path.Join(config.APIFilesFull, imageID+".png"),
 	}
 }

@@ -72,7 +72,3 @@ type MapTile struct {
 	ImageTag string `bson:"image_tag" json:"image_tag"`
 	URL      string `bson:"-" json:"url"`
 }
-
-var (
-	CookieLife = 168 * time.Hour
-)
